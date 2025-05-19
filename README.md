@@ -57,25 +57,14 @@ Follow these steps to create and secure an S3 bucket for Terraform state:
      --region eu-west-1 || :
    ```
 
-4. **(Optional) Create a DynamoDB table for state locking:**
-
-   ```sh
-   aws dynamodb create-table \
-     --table-name terraform-lock \
-     --attribute-definitions AttributeName=LockID,AttributeType=S \
-     --key-schema AttributeName=LockID,KeyType=HASH \
-     --billing-mode PAY_PER_REQUEST \
-     --region eu-west-1 || :
-   ```
-
-5. **Update your `main.tf` backend block:**
+4. **Update your `main.tf` backend block:**
    ```hcl
    terraform {
      backend "s3" {
        bucket         = "delivops-terraform-tfstate"
        key            = "terraform.tfstate"
        region         = "eu-west-1"
-       dynamodb_table = "terraform-lock" # optional
+       use_lockfile = true
        encrypt        = true
      }
    }

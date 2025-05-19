@@ -1,6 +1,4 @@
-locals {
-  certificate_arn = "arn:aws:acm:eu-west-1:887063810123:certificate/6b3a3ff2-4b61-4a9b-a8b1-9f04dc2fc278"
-}
+
 
 module "staging_internal_alb" {
   source   = "terraform-aws-modules/alb/aws"
