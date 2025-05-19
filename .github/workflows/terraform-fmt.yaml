@@ -1,0 +1,35 @@
+name: Terraform Fmt
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        required: true
+        type: choice
+        description: Environment
+        options:
+          - env/infrastructure
+          - env/production
+          - env/staging
+
+permissions:
+  id-token: write
+  contents: write
+  issues: write
+
+env:
+  TF_LOG: INFO
+
+jobs:
+  terraform-fmt:
+    name: "Terraform Fmt"
+    runs-on: ubuntu-latest
+    steps:
+      - name: delivops-github-action-terraform-fmt
+        uses: delivops/terraform-fmt-action@0.0.3
+        with:
+          working_directory: ${{ github.event.inputs.env }}
+          aws_region: ${{ secrets.AWS_DEFAULT_REGION }}
+          aws_role: "github_terraform"
+          aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,28 @@
+name: "Terraform infrastructure"
+on:
+  push:
+    branches: ['main']
+    paths: ['env/infrastructure/**', 'modules/**']
+  pull_request:
+    paths: ['env/infrastructure/**', 'modules/**']
+permissions:
+      id-token: write # This is required for aws oidc connection
+      contents: read # This is required for actions/checkout
+      pull-requests: write # This is required for gh bot to comment PR
+env:
+  TF_LOG: INFO
+
+jobs:
+  terraform:
+    name: "Terraform"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delivops Terraform Workflow
+        uses: delivops/terraform-action@main
+        with:
+          working_directory: "env/infrastructure"
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
+          environment: "infrastructure"
+          aws_region: ${{ secrets.AWS_DEFAULT_REGION }}
+          aws_role: "github_terraform"

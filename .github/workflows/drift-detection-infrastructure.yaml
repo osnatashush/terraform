@@ -1,0 +1,31 @@
+name: Drift Detection infrastructure
+
+on:
+  workflow_dispatch: 
+  schedule:
+    - cron: '41 3 * * *' # runs nightly at 3:41 am
+
+#Special permissions required for OIDC authentication
+permissions:
+  id-token: write
+  contents: read
+  issues: write
+
+env:
+  TF_LOG: INFO
+
+jobs:
+  terraform-drift-detection:
+    name: 'Terraform Drift'
+    runs-on: ubuntu-latest  
+    steps:
+      - name: Delivops Terraform Drift Detection Workflow
+        uses: delivops/github-actions-terraforn-drift-detection@v3.0.0
+        with:
+          working_directory: 'env/infrastructure'
+          slack_webhook: ${{ secrets.SLACK_WEBHOOK_DRIFT }}
+          environment: 'infrastructure'
+          aws_region: ${{ secrets.AWS_DEFAULT_REGION }}
+          aws_role: 'github_terraform'
+          aws_account_id: ${{ secrets.AWS_ACCOUNT_ID }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

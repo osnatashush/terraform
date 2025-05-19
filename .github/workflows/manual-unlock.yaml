@@ -1,0 +1,54 @@
+name: "Terraform Unlock"
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        required: true
+        type: choice
+        description: Environment
+        options:
+          - global
+          - groundcover
+          - env/infrastructure
+          - env/production
+          - env/staging
+      lock_id:
+        required: true
+        type: string
+        description: Lock Id
+permissions:
+      id-token: write # This is required for aws oidc connection
+      contents: read # This is required for actions/checkout
+env:
+  TF_LOG: INFO
+  TF_VAR_aws_region: ${{ vars.TF_VAR_AWS_REGION }}
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: global
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+        
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github_terraform"
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Terraform Init
+        run: terraform init || terraform init -upgrade
+        working-directory: ${{ github.event.inputs.env }}
+
+      - name: Terraform Force Unlock
+        run: |
+          terraform force-unlock -force ${{ github.event.inputs.lock_id }}
+        working-directory: ${{ github.event.inputs.env }}
